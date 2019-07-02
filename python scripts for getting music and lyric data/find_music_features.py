@@ -1,8 +1,6 @@
 import spotipy
 import pandas as pd
-import enchant
 
-dictionary = enchant.Dict("en_US")
 
 from spotipy.oauth2 import SpotifyClientCredentials
 
@@ -76,7 +74,7 @@ for artist in artist_list:
             name = title.split()
             name_list = []
             for word in name:
-                if word.isalnum() and dictionary.check(word) == True:
+                if word.isalnum():
                     name_list.append(word.lower())
             
                 track_name_changed = '-'.join(name_list)
@@ -84,12 +82,13 @@ for artist in artist_list:
 
             #extract individual audio features of individual tracks
             for feature in audiofeatures:
-                feature_list.append([feature['danceability'], feature['energy'], feature['key'], feature['speechiness'],
-                                     feature['acousticness'], feature['instrumentalness'], feature['liveness'], feature['valence'],
-                                     feature['tempo'], feature['duration_ms'],feature['time_signature'], artistalbums['items'][0]['artists'][0]['name'], artistalbums['items'][i]['release_date'], album_tracks['items'][j]['name'], track_name_changed])
+                print(feature)
+#                 feature_list.append([feature['danceability'], feature['energy'], feature['key'], feature['speechiness'],
+#                                      feature['acousticness'], feature['instrumentalness'], feature['liveness'], feature['valence'],
+#                                      feature['tempo'], feature['duration_ms'],feature['time_signature'], artistalbums['items'][0]['artists'][0]['name'], artistalbums['items'][i]['release_date'], album_tracks['items'][j]['name'], track_name_changed])
 
 
-data = pd.DataFrame(feature_list, columns = ['danceability','energy','key','speechiness','acousticness','instrumentalness','liveness','valence','tempo','duration_ms','time_signature', 'artist_name', 'release_date', 'song_name', 'song_name_formatted'])
+# data = pd.DataFrame(feature_list, columns = ['danceability','energy','key','speechiness','acousticness','instrumentalness','liveness','valence','tempo','duration_ms','time_signature', 'artist_name', 'release_date', 'song_name', 'song_name_formatted'])
 
-data.to_csv('data/kpop_song_features4.csv')
+# data.to_csv('data/kpop_song_features_marcus.csv')
 
