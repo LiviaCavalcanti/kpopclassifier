@@ -1,0 +1,110 @@
+---
+title: "O que o pop da Coreia tem a ver com o dos EUA"
+author: "Lívia Cavalcanti e Marcus Vinícius"
+date: "3 de julho de 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r warning=F}
+library(tidyverse)
+theme_set(theme_bw())
+# library(broom)
+library(modelr) 
+library(corrplot)
+library(gridExtra)
+
+```
+
+# Os dados
+
+```{r echo=FALSE}
+song_features = read_csv(here::here("data/new_song_features.csv")) 
+artist_followers = read_csv(here::here("data/artists_name_and_followers.csv")) 
+summary(song_features)
+glimpse(artist_followers)
+```
+
+
+```{r}
+song_artist_data = inner_join(artist_followers, song_features)
+temp=song_artist_data %>% select(-isKPop, -isExplicit, -albumName, -song_name, -artist_name, -release_date)
+m=cor(temp)
+corrplot(m, method="color")
+
+```
+
+```{r}
+kpop = song_artist_data %>% filter(isKPop=="True") %>% select(-instrumentalness, -isKPop, -isExplicit) #intrumentalness ~ 0, isExplicit == FALSE
+kpop_cor = kpop %>% select(-artist_name, -albumName, -song_name, -release_date)
+kpop_cor = cor(kpop_cor)
+corrplot(kpop_cor, method="color")
+```
+
+```{r}
+apop = song_artist_data %>% filter(isKPop=="False") %>% select(-isKPop) 
+apop_cor = apop %>% select(-artist_name, -albumName, -song_name, -release_date, -isExplicit)
+apop_cor = cor(apop_cor)
+corrplot(apop_cor, method="color")
+```
+
+
+```{r}
+plots <- function(song_data) {
+  dance<-song_data %>%
+    ggplot() +
+      geom_density(aes(danceability)) 
+  tempo<-song_data %>%
+    ggplot() +
+    geom_density(aes(tempo))
+  pop<-song_data %>%
+    ggplot() +
+    geom_density(aes(popularity))
+  totArt <- song_data %>%
+    ggplot() +
+    geom_density(aes(totalArtists))
+  totalTrack<-song_data %>%
+    ggplot() +
+    geom_density(aes(albumTotalTracks))
+  energy<-song_data %>%
+    ggplot() +
+    geom_density(aes(energy))
+  speech<-song_data %>%
+    ggplot() +
+    geom_density(aes(speechiness))
+  acoustic <- song_data %>%
+    ggplot() +
+    geom_density(aes(acousticness))
+  # song_data %>%
+  #   ggplot() +
+  #   geom_density(aes(instrumentalness))
+  live <- song_data %>%
+    ggplot() +
+    geom_density(aes(liveness))
+  val <- song_data %>%
+    ggplot() +
+    geom_density(aes(valence))
+  dur <- song_data %>%
+    ggplot() +
+    geom_density(aes(duration_ms)) +
+    theme(axis.text.x = element_text(angle=90))
+  
+  grid.arrange(dance, tempo, pop, totArt, totalTrack, energy, speech, acoustic, live, val, dur, nrow = 3)
+
+}
+
+
+```
+
+```{r}
+
+plots(apop)
+```
+
+```{r}
+plots(kpop)
+```
+
