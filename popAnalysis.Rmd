@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r warning=F}
 library(tidyverse)
 theme_set(theme_bw())
-# library(broom)
+library(broom)
 library(modelr) 
 library(corrplot)
 library(gridExtra)
@@ -38,14 +38,14 @@ corrplot(m, method="color")
 ```
 
 ```{r}
-kpop = song_artist_data %>% filter(isKPop=="True") %>% select(-instrumentalness, -isKPop, -isExplicit) #intrumentalness ~ 0, isExplicit == FALSE
+kpop = song_artist_data %>% filter(isKPop=="TRUE") %>% select(-instrumentalness, -isKPop, -isExplicit) #intrumentalness ~ 0, isExplicit == FALSE
 kpop_cor = kpop %>% select(-artist_name, -albumName, -song_name, -release_date)
 kpop_cor = cor(kpop_cor)
 corrplot(kpop_cor, method="color")
 ```
 
 ```{r}
-apop = song_artist_data %>% filter(isKPop=="False") %>% select(-isKPop) 
+apop = song_artist_data %>% filter(isKPop=="FALSE") %>% select(-isKPop) 
 apop_cor = apop %>% select(-artist_name, -albumName, -song_name, -release_date, -isExplicit)
 apop_cor = cor(apop_cor)
 corrplot(apop_cor, method="color")
@@ -107,4 +107,138 @@ plots(apop)
 ```{r}
 plots(kpop)
 ```
+
+### Análise com regressão
+
+Nesta sessão, discutiremos quais variáveis melhor explicam a popularidade de uma música, e para isso, iremos realizar diversos experimentos utilizando regressão linear, a fim de, obter uma (ou várias) variável que explica muito bem o por que daquela música ser popular.
+
+## Características que serão analisadas: Duração da música (em ms), 
+
+# Popularidade de uma música vs Tempo de duração (em milisegundos)
+
+### PARA KPOP
+
+Primeiramente, iremos visualizar um gráfico de pontos dessas duas variáveis para tentar traçar padrões.
+
+```{r}
+kpop %>% ggplot(aes(x=popularity, y = duration_ms)) + geom_point() + geom_smooth(method = "lm", se = FALSE)
+```
+
+Podemos notar inicialmente que, a variável duração da música, a principio, não explica muito bem o por que de uma música ser popular. Vamos confirmar essa hipotése com um modelo de regressão linear.
+
+```{r}
+
+modelo_duration <- lm(popularity ~ duration_ms , 
+          data = kpop)
+
+```
+Modelo obtido:
+```{r}
+tidy(modelo_duration)
+
+```
+
+Seu R²:
+
+```{r}
+glance(modelo_duration)
+```
+
+Como já desconfiavamos, a variável duração, sozinha, não explica muito o por que de uma música ser popular, e isso pode ser confirmado pelo coeficiente R² obtido na regressão linear, que nos diz que, a variável duration só explica 1% a variável popularidade.
+
+### PARA POP AMERICANO
+
+Primeiramente, iremos visualizar um gráfico de pontos dessas duas variáveis para tentar traçar padrões.
+
+```{r}
+apop %>% ggplot(aes(x=popularity, y = duration_ms)) + geom_point() + geom_smooth(method = "lm", se = FALSE)
+```
+
+Para as músicas populares americanas, podemos notar que, a variável duração já tem uma maior taxa de explicação sobre a variável popularidade. Vamos confirmar essa tese com um modelo de regressão linear.
+
+```{r}
+
+modelo_duration_apop <- lm(popularity ~ duration_ms , 
+          data = apop)
+
+```
+Modelo obtido:
+```{r}
+tidy(modelo_duration_apop)
+
+```
+
+Seu R²:
+
+```{r}
+glance(modelo_duration_apop)
+```
+
+Como podemos perceber, para o cenário de músicas populares americanas, a variável duração explica muito melhor a variável popularidade do que em relação ao cenário de músicas de kpop. Essa melhoria pode ser notada pelo valor do R² obtido na regressão, que para esse cenário, explica em 20%. Por mais que esse valor ainda não seja o ideal, podemos notar uma boa mudança de valores apenas mudando as regiões (países) de interesse. É importante lembrar também que, esse valor foi obtido a partir de uma regressão linear simples, logo, existe apenas uma variável tentando explicar outra, sendo mais dificil obter valores maiores.
+
+
+
+
+# Popularidade de uma música vs Nível de Acoustica
+
+### PARA KPOP
+
+Primeiramente, iremos visualizar um gráfico de pontos dessas duas variáveis para tentar traçar padrões.
+
+```{r}
+kpop %>% ggplot(aes(x=popularity, y = acousticness)) + geom_point() + geom_smooth(method = "lm", se = FALSE)
+```
+
+Podemos notar inicialmente que, a variável acousticness, que nos diz uma escala entre [0-1] não possui um bom teor de explicação sobre a variável popularidade, e isso pode ser percebido pela reta de regressão feita no gráfico, que não divide muito bem os pontos. Para confirmar essa tese, faremos o modelo de regressão abaixo.
+
+```{r}
+
+modelo_acousticness <- lm(popularity ~ acousticness , 
+          data = kpop)
+
+```
+Modelo obtido:
+```{r}
+tidy(modelo_acousticness)
+
+```
+
+Seu R²:
+
+```{r}
+glance(modelo_acousticness)
+```
+
+Como já desconfiavamos, a variável acousticness se mostrou péssima para explicar a variável de popularidade de uma música, essa confirmação pode ser notada pelo valor do R² obtido, que é extremamente baixo. A conclusão que obtemos é, para o cenário de Kpop, uma música ser inteiramente acoustica ou inteiramente não-acoustica não influencia muito na sua popularidade.
+
+### PARA POP AMERICANO
+
+Primeiramente, iremos visualizar um gráfico de pontos dessas duas variáveis para tentar traçar padrões.
+
+```{r}
+apop %>% ggplot(aes(x=popularity, y = acousticness)) + geom_point() + geom_smooth(method = "lm", se = FALSE)
+```
+
+Por mais que, aparentemente a variável ainda não demonstre ter um bom teor de explicação sobre a variável popularidade, podemos ver que para o cenário de músicas populares americanas, essa variável já consegue, aparentemente, explicar um pouco melhor em relação ao cenário de kpop. Confirmaremos abaixo. 
+
+```{r}
+
+modelo_acousticness_apop <- lm(popularity ~ acousticness , 
+          data = apop)
+
+```
+Modelo obtido:
+```{r}
+tidy(modelo_acousticness_apop)
+
+```
+
+Seu R²:
+
+```{r}
+glance(modelo_acousticness_apop)
+```
+
+Como podemos perceber, para o cenário de músicas populares americanas, a variável acousticness continua bastante inexpressiva para sua função (5% de explicação, segundo o R²), que é explicar a variável popularidade de uma música, no entanto, cumpre seu papel com mais eficácia nos dados de músicas populares americanas. A conclusão geral é, em ambos os cenários (kpop e apop), essa variável se mostrou bastante fraca para explicar o quão popular uma música é.
+
 
