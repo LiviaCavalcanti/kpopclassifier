@@ -38,20 +38,25 @@ corrplot(m, method="color")
 ```
 
 ```{r}
-kpop = song_artist_data %>% filter(isKPop=="TRUE") %>% select(-instrumentalness, -isKPop, -isExplicit) #intrumentalness ~ 0, isExplicit == FALSE
+kpop = song_artist_data %>% filter(isKPop=="True") %>% select(-instrumentalness, -isKPop, -isExplicit) #intrumentalness ~ 0, isExplicit == FALSE
 kpop_cor = kpop %>% select(-artist_name, -albumName, -song_name, -release_date)
 kpop_cor = cor(kpop_cor)
 corrplot(kpop_cor, method="color")
 ```
 
 ```{r}
-apop = song_artist_data %>% filter(isKPop=="FALSE") %>% select(-isKPop) 
+apop = song_artist_data %>% filter(isKPop=="False") %>% select(-isKPop) 
 apop_cor = apop %>% select(-artist_name, -albumName, -song_name, -release_date, -isExplicit)
 apop_cor = cor(apop_cor)
 corrplot(apop_cor, method="color")
 ```
 
+```{r}
+kpop_cor
+```
+energy, followers, sppeechiness, instrumentalness
 
+tempo,time_signature, totalArtists, albumTotalTracks
 ```{r}
 plots <- function(song_data) {
   dance<-song_data %>%
@@ -108,15 +113,17 @@ plots(apop)
 plots(kpop)
 ```
 
-### Análise com regressão
+## Análise com regressão
 
 Nesta sessão, discutiremos quais variáveis melhor explicam a popularidade de uma música, e para isso, iremos realizar diversos experimentos utilizando regressão linear, a fim de, obter uma (ou várias) variável que explica muito bem o por que daquela música ser popular.
 
-## Características que serão analisadas: Duração da música (em ms), 
 
-# Popularidade de uma música vs Tempo de duração (em milisegundos)
 
-### PARA KPOP
+ Características que serão analisadas: Duração da música (em ms), 
+
+### Popularidade de uma música vs Tempo de duração (em milisegundos)
+
+#### PARA KPOP
 
 Primeiramente, iremos visualizar um gráfico de pontos dessas duas variáveis para tentar traçar padrões.
 
@@ -146,7 +153,7 @@ glance(modelo_duration)
 
 Como já desconfiavamos, a variável duração, sozinha, não explica muito o por que de uma música ser popular, e isso pode ser confirmado pelo coeficiente R² obtido na regressão linear, que nos diz que, a variável duration só explica 1% a variável popularidade.
 
-### PARA POP AMERICANO
+#### PARA POP AMERICANO
 
 Primeiramente, iremos visualizar um gráfico de pontos dessas duas variáveis para tentar traçar padrões.
 
@@ -179,9 +186,9 @@ Como podemos perceber, para o cenário de músicas populares americanas, a vari�
 
 
 
-# Popularidade de uma música vs Nível de Acoustica
+### Popularidade de uma música vs Nível de Acoustica
 
-### PARA KPOP
+#### PARA KPOP
 
 Primeiramente, iremos visualizar um gráfico de pontos dessas duas variáveis para tentar traçar padrões.
 
@@ -211,7 +218,7 @@ glance(modelo_acousticness)
 
 Como já desconfiavamos, a variável acousticness se mostrou péssima para explicar a variável de popularidade de uma música, essa confirmação pode ser notada pelo valor do R² obtido, que é extremamente baixo. A conclusão que obtemos é, para o cenário de Kpop, uma música ser inteiramente acoustica ou inteiramente não-acoustica não influencia muito na sua popularidade.
 
-### PARA POP AMERICANO
+#### PARA POP AMERICANO
 
 Primeiramente, iremos visualizar um gráfico de pontos dessas duas variáveis para tentar traçar padrões.
 
@@ -241,4 +248,159 @@ glance(modelo_acousticness_apop)
 
 Como podemos perceber, para o cenário de músicas populares americanas, a variável acousticness continua bastante inexpressiva para sua função (5% de explicação, segundo o R²), que é explicar a variável popularidade de uma música, no entanto, cumpre seu papel com mais eficácia nos dados de músicas populares americanas. A conclusão geral é, em ambos os cenários (kpop e apop), essa variável se mostrou bastante fraca para explicar o quão popular uma música é.
 
+### Vendo o que temos mais por aqui
 
+A partir das matrizes de correlações algumas features foram escolhidas para vermos seus níveis de explicabilidade. São elas energy, followers, sppeechiness, instrumentalness, a partir da matriz de K-Pop e tempo,time_signature, totalArtists, albumTotalTracks, da matriz de A-Pop.
+
+```{r}
+modelo_energy_kpop <- lm(popularity ~ energy,
+                         data=kpop)
+modelo_followers_kpop <- lm(popularity ~ followers,
+                         data=kpop)
+modelo_speechiness_kpop <- lm(popularity ~ speechiness,
+                         data=kpop)
+modelo_tempo_kpop <- lm(popularity ~ tempo,
+                         data=kpop)
+modelo_time_signature_kpop <- lm(popularity ~ time_signature,
+                         data=kpop)
+modelo_totalArtists_kpop <- lm(popularity ~ totalArtists,
+                         data=kpop)
+modelo_albumTotalTracks_kpop <- lm(popularity ~ albumTotalTracks,
+                         data=kpop)
+
+modelo_energy_apop <- lm(popularity ~ energy,
+                         data=apop)
+modelo_followers_apop <- lm(popularity ~ followers,
+                         data=apop)
+modelo_speechiness_apop <- lm(popularity ~ speechiness,
+                         data=apop)
+modelo_instrumentalness_apop <- lm(popularity ~ instrumentalness,
+                         data=apop)
+modelo_tempo_apop <- lm(popularity ~ tempo,
+                         data=apop)
+modelo_time_signature_apop <- lm(popularity ~ time_signature,
+                         data=apop)
+modelo_totalArtists_apop <- lm(popularity ~ totalArtists,
+                         data=apop)
+modelo_albumTotalTracks_apop <- lm(popularity ~ albumTotalTracks,
+                         data=apop)
+
+
+```
+
+```{r}
+tidy(modelo_energy_kpop)
+
+glance(modelo_energy_kpop)
+```
+
+```{r}
+tidy(modelo_energy_apop)
+
+glance(modelo_energy_apop)
+```
+
+```{r}
+tidy(modelo_followers_kpop)
+
+glance(modelo_followers_kpop) ################
+```
+
+```{r}
+tidy(modelo_followers_apop)
+
+glance(modelo_followers_apop)
+```
+
+```{r}
+tidy(modelo_speechiness_kpop)
+
+glance(modelo_speechiness_kpop)
+```
+
+```{r}
+tidy(modelo_speechiness_apop)
+
+glance(modelo_speechiness_apop)
+```
+
+```{r}
+tidy(modelo_time_signature_kpop)
+
+glance(modelo_time_signature_kpop)
+```
+
+```{r}
+tidy(modelo_time_signature_apop)
+
+glance(modelo_time_signature_apop)
+```
+
+```{r}
+tidy(modelo_tempo_kpop)
+
+glance(modelo_tempo_kpop)
+```
+
+```{r}
+tidy(modelo_tempo_apop)
+
+glance(modelo_tempo_apop)
+```
+
+```{r}
+tidy(modelo_totalArtists_kpop)
+
+glance(modelo_totalArtists_kpop)
+```
+
+```{r}
+tidy(modelo_totalArtists_apop)
+
+glance(modelo_totalArtists_apop)
+```
+
+```{r}
+tidy(modelo_albumTotalTracks_kpop)
+
+glance(modelo_albumTotalTracks_kpop)
+```
+
+```{r}
+tidy(modelo_albumTotalTracks_apop)
+
+glance(modelo_albumTotalTracks_apop)
+```
+
+### O que conseguimos com esses resultados?
+
+A partir de todos esses números, tentamos juntá-los, mas, como esperado, uma regressão múltipla não gera um R² ajustado composto dos modelos simples. Buscamos selecionar os mais promissores modelos dos vistos acima a partir desta mesma métrica, visto que muitas variáveis, ainda que tenham correlação significativa, se mostraram pobres no cenário de regressão para o alvo `popularity`. Entretanto, facilmente, foi atingido um limiar superior de explicabilidade possível utilizando os dados disponíveis que é muito próximo do R² obtido com a regressão simples obtida utilizando a variável mais explicativa.
+
+
+Para o modelo K-Pop foram testadas as variáveis `followers`, `albumTotalTracks`, `totalArtists`, `tempo`, `time_signature`, `acousticness`. Apesar do R² chegar a 71%, o R² ajustado não passou 69%. Da mesma forma, foram testadas `followers`, `albumTotalTracks`, `totalArtists`, `tempo`, `time_signature`, `acousticness`, `speechiness`, mas o R² ajustado alcançou apenas 27%.
+
+
+Como limiares foram atingidos a despeito da quantidade de features utilizadas, preferimos deixar as mais essenciais para manter, aproximadamente, a magnitude do R² ajustado sem muitas perdas. 
+
+
+Com isso, os resultados foram:
+```{r}
+
+modelo_kpop <- lm(popularity ~ followers +  tempo, 
+                 data=kpop)
+
+tidy(modelo_kpop, conf.int = TRUE)
+
+glance(modelo_kpop)
+```
+
+```{r}
+modelo_apop <- lm(popularity ~ acousticness +  duration_ms + followers + energy , 
+                 data=apop)
+
+tidy(modelo_apop, conf.int = TRUE)
+
+glance(modelo_apop)
+```
+
+### E o que esses modelos significam?
